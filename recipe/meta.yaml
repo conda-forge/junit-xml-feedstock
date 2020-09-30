@@ -1,19 +1,30 @@
 {% set name = "junit-xml" %}
-{% set version = "1.8" %}
-{% set sha256 = "602f1c480a19d64edb452bf7632f76b5f2cb92c1938c6e071dcda8ff9541dc21" %}
+{% set version = "1.9" %}
+{% set python_tag = 'py2.py3' %}
+{% set use_wheel = True %}
 
 package:
   name: {{ name|lower }}
   version: {{ version }}
 
 source:
-  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-  sha256: {{ sha256 }}
+  {% if use_wheel %}
+  - url: https://pypi.org/packages/{{ python_tag }}/{{ name[0] }}/{{ name }}/{{ name | replace('-', '_') }}-{{ version }}-{{ python_tag }}-none-any.whl
+    sha256: "ec5ca1a55aefdd76d28fcc0b135251d156c7106fa979686a4b48d62b761b4732"
+  {% else %}
+  - url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
+    sha256: ""
+  {% endif %}
+
 
 build:
   noarch: python
   number: 0
-  script: "{{ PYTHON }} -m pip install . --no-deps --ignore-installed --no-cache-dir -vvv"
+  {% if use_wheel %}
+  script: "{{ PYTHON }} -m pip install --no-deps --ignore-installed --no-cache-dir -vvv *.whl"
+  {% else %}
+  script: "{{ PYTHON }} -m pip install --no-deps --ignore-installed --no-cache-dir -vvv ."
+  {% endif %}
 
 requirements:
   host:
@@ -30,7 +41,12 @@ test:
 about:
   home: https://github.com/kyrus/python-junit-xml
   license: MIT
-  license_file: LICENSE.txt
+  license_file:
+    {% if use_wheel %}
+    - "{{ name | replace('-', '_') }}-{{ version }}.dist-info/LICENSE.txt"
+    {% else %}
+    - LICENSE.txt
+    {% endif %}
   summary: 'Creates JUnit XML test result documents that can be read by tools such as Jenkins'
   license_family: MIT
 
@@ -38,3 +54,4 @@ extra:
   recipe-maintainers:
     - chapmanb
     - dfornika
+    - mariusvniekerk
