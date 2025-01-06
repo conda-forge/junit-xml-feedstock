@@ -1,40 +1,31 @@
 {% set name = "junit-xml" %}
 {% set version = "1.9" %}
-{% set python_tag = 'py2.py3' %}
-{% set use_wheel = True %}
 
 package:
   name: {{ name|lower }}
   version: {{ version }}
 
 source:
-  {% if use_wheel %}
-  - url: https://pypi.org/packages/{{ python_tag }}/{{ name[0] }}/{{ name }}/{{ name | replace('-', '_') }}-{{ version }}-{{ python_tag }}-none-any.whl
-    sha256: "ec5ca1a55aefdd76d28fcc0b135251d156c7106fa979686a4b48d62b761b4732"
-  {% else %}
-  - url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-    sha256: ""
-  {% endif %}
-
+  - url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
+    sha256: "de16a051990d4e25a3982b2dd9e89d671067548718866416faec14d9de56db9f"
 
 build:
   noarch: python
-  number: 0
-  {% if use_wheel %}
-  script: "{{ PYTHON }} -m pip install --no-deps --ignore-installed --no-cache-dir -vvv *.whl"
-  {% else %}
+  number: 1
   script: "{{ PYTHON }} -m pip install --no-deps --ignore-installed --no-cache-dir -vvv ."
-  {% endif %}
 
 requirements:
   host:
-    - python
+    - python {{ python_min }}
     - pip
+    - setuptools
   run:
-    - python
+    - python >={{ python_min }}
     - six
 
 test:
+  requires:
+    - python {{ python_min }}
   imports:
     - junit_xml
 
@@ -42,11 +33,7 @@ about:
   home: https://github.com/kyrus/python-junit-xml
   license: MIT
   license_file:
-    {% if use_wheel %}
-    - "{{ name | replace('-', '_') }}-{{ version }}.dist-info/LICENSE.txt"
-    {% else %}
     - LICENSE.txt
-    {% endif %}
   summary: 'Creates JUnit XML test result documents that can be read by tools such as Jenkins'
   license_family: MIT
 
